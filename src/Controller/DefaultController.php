@@ -2,16 +2,20 @@
 
 namespace App\Controller;
 
-use App\Service\VirailRoutes;
+use App\Service\VirailTransport;
+use DateTime;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 
 class DefaultController extends AbstractController
 {
-    public function index(VirailRoutes $virailRoutesService)
+    public function index(Request $request, VirailTransport $transport)
     {
         $routes = [];
+        $excludedTransport = $request->get('exclude') ? explode(',', $request->get('exclude')) : [];
         for ($i = 1; $i <= 7; $i++) {
-            $dayCheapestRoute = $virailRoutesService->getDayCheapestRoute((new \DateTime("+{$i} day")));
+            $date = new DateTime("+{$i} day");
+            $dayCheapestRoute = $transport->getDayCheapestRoute($date, $excludedTransport);
             if ($dayCheapestRoute) {
                 $routes[] = $dayCheapestRoute;
             }

@@ -11,10 +11,12 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class VirailRoutes
+class VirailTransport implements TransportInterface
 {
     private const URL = 'https://www.virail.com/virail/v7/search/en_us?from=c.3173435&to=c.3169070&lang=en_us&dt=%s&currency=USD&adult_passengers=1';
-    private const EXCLUDED_TRANSPORTS = ['car'];
+    private const DATE_FORMAT = 'Y-m-d';
+    private const TIME_FORMAT = 'H:i';
+
     /**
      * @var HttpClientInterface
      */
@@ -27,11 +29,12 @@ class VirailRoutes
 
     /**
      * @param DateTime $date
+     * @param array $excludedTransport
      * @return array|null
      */
-    public function getDayCheapestRoute(DateTime $date) {
+    public function getDayCheapestRoute(DateTime $date, array $excludedTransport = []) {
 
-        $routes = $this->getAllRoutes($date);
+        $routes = $this->getAllRoutes($date, $excludedTransport);
         if (!$routes) {
             return null;
         }
@@ -43,10 +46,10 @@ class VirailRoutes
         $arrivalStation = $this->getArrivalStation($cheapestRoute);
 
         return [
-            'date' => $departureTime->format('Y-m-d'),
+            'date' => $departureTime->format(self::DATE_FORMAT),
             'transport' => $cheapestRoute['transport'],
-            'departure' => "{$departureStation} ({$departureTime->format('H:i')})",
-            'arrival' => "{$arrivalStation} ({$arrivalTime->format('H:i')})" .
+            'departure' => "{$departureStation} ({$departureTime->format(self::TIME_FORMAT)})",
+            'arrival' => "{$arrivalStation} ({$arrivalTime->format(self::TIME_FORMAT)})" .
                 ($dayDifference ? " +{$dayDifference}" : ''),
             'duration' => $cheapestRoute['duration'],
             'price' => $cheapestRoute['price']
@@ -55,16 +58,17 @@ class VirailRoutes
 
     /**
      * @param DateTime $date
+     * @param array $excludedTransport
      * @return array|null
      */
-    private function getAllRoutes(DateTime $date) {
+    public function getAllRoutes(DateTime $date, array $excludedTransport = []) {
         try {
-            $url = sprintf(self::URL, $date->format('Y-m-d'));
+            $url = sprintf(self::URL, $date->format(self::DATE_FORMAT));
             $result = $this->httpClient->request('GET', $url);
             if ($result->getStatusCode() === Response::HTTP_OK) {
                 $routes = json_decode($result->getContent(), true)['result'];
-                $filteredRoutes = array_filter($routes, function ($route){
-                    return !in_array($route['transport'], self::EXCLUDED_TRANSPORTS);
+                $filteredRoutes = array_filter($routes, function ($route) use ($excludedTransport) {
+                    return !in_array($route['transport'], $excludedTransport);
                 });
                 return array_values($filteredRoutes);
             }
@@ -78,8 +82,8 @@ class VirailRoutes
 
     private function getDifferenceInDays(DateTime $startTime, DateTime $endTime) : int {
         try {
-            $endDate = (new DateTime($endTime->format('Y-m-d')));
-            $startDate = (new DateTime($startTime->format('Y-m-d')));
+            $endDate = (new DateTime($endTime->format(self::DATE_FORMAT)));
+            $startDate = (new DateTime($startTime->format(self::DATE_FORMAT)));
             return $startDate->diff($endDate)->d;
         } catch (Exception $e) {
             return false;
@@ -87,15 +91,11 @@ class VirailRoutes
     }
 
     private function getCheapestRoute(array $routes): array {
-        $cheapestPrice = $routes[0]['priceVal'];
-        $key = 0;
-        foreach ($routes as $index => $route) {
-            if ($route['priceVal'] < $cheapestPrice) {
-                $cheapestPrice = $route['priceVal'];
-                $key = $index;
-            }
-        }
-        return $routes[$key];
+        usort($routes, function ($a, $b) {
+            return $a['priceVal'] <=> $b['priceVal'];
+        });
+
+        return $routes[0];
     }
 
     private function getDepartureTime(array $route) : DateTime {
@@ -115,27 +115,18 @@ class VirailRoutes
     }
 
     private function getArrivalSegment(array $route) : array {
-        $arrivalTime = $route['segments'][0]['toTimeVal'];
-        $index = 0;
-        foreach ($route['segments'] as $key => $segment) {
-            if ($segment['toTimeVal'] > $arrivalTime) {
-                $arrivalTime = $segment['toTimeVal'];
-                $index = $key;
-            }
-        }
+        usort($route['segments'], function ($a, $b) {
+            return -($a['toTimeVal'] <=> $b['toTimeVal']);
+        });
 
-        return $route['segments'][$index];
+        return $route['segments'][0];
     }
 
     private function getDepartureSegment(array $route) : array {
-        $departureTime = $route['segments'][0]['fromTimeVal'];
-        $index = 0;
-        foreach ($route['segments'] as $key => $segment) {
-            if ($segment['fromTimeVal'] < $departureTime) {
-                $departureTime = $segment['fromTimeVal'];
-                $index = $key;
-            }
-        }
-        return $route['segments'][$index];
+        usort($route['segments'], function ($a, $b) {
+            return $a['fromTimeVal'] <=> $b['fromTimeVal'];
+        });
+
+        return $route['segments'][0];
     }
 }

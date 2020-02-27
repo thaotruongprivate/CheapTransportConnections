@@ -1,15 +1,5 @@
 {% extends 'base.html.twig' %}
 
-{% block head %}
-    {{ parent() }}
-    <style>
-        td, th {
-            border: solid 1px grey;
-            padding: 5px;
-        }
-    </style>
-{% endblock %}
-
 {% block content %}
     <h1>Cheapest routes for the next 7 days</h1>
     <table>
