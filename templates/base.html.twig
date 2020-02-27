@@ -1,16 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en-us">
 <head>
-    <style>
-        td, th {
-            border: solid 1px grey;
-            padding: 5px;
-        }
-        table {
-            border-collapse: collapse;
-        }
-    </style>
     <title>{{ title ?? 'Virail' }}</title>
+    {% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+    {% endblock %}
 </head>
 <body>
 <div id="content">{% block content %}{% endblock %}</div>
