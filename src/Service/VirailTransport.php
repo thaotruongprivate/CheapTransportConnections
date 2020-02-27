@@ -34,7 +34,8 @@ class VirailTransport
      * @param array $excludedTransport
      * @return array|null
      */
-    public function getDayCheapestConnection(DateTime $date, array $excludedTransport = []) {
+    public function getDayCheapestConnection(DateTime $date, array $excludedTransport = [])
+    {
 
         $connections = $this->getAllConnections($date, $excludedTransport);
         if (!$connections) {
@@ -58,7 +59,8 @@ class VirailTransport
         ];
     }
 
-    public function getAllConnections(DateTime $date, array $excludedTransport = []): array {
+    public function getAllConnections(DateTime $date, array $excludedTransport = []): array
+    {
         try {
             $url = sprintf(self::URL, $date->format(self::DATE_FORMAT));
             $result = $this->httpClient->request('GET', $url);
@@ -77,7 +79,8 @@ class VirailTransport
         return [];
     }
 
-    private function getDifferenceInDays(DateTime $startTime, DateTime $endTime) : int {
+    private function getDifferenceInDays(DateTime $startTime, DateTime $endTime): int
+    {
         try {
             $endDate = (new DateTime($endTime->format(self::DATE_FORMAT)));
             $startDate = (new DateTime($startTime->format(self::DATE_FORMAT)));
@@ -87,7 +90,8 @@ class VirailTransport
         }
     }
 
-    private function getCheapestConnection(array $connections) : ConnectionModelInterface {
+    private function getCheapestConnection(array $connections): ConnectionModelInterface
+    {
         usort($connections, function ($a, $b) {
             return $a['priceVal'] <=> $b['priceVal'];
         });

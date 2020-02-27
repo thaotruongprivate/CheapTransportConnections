@@ -8,47 +8,57 @@ class VirailConnectionModel implements ConnectionModelInterface
 {
     protected $connectionData;
 
-    public function __construct(array $route) {
+    public function __construct(array $route)
+    {
         $this->connectionData = $route;
         usort($this->connectionData['segments'], function ($a, $b) {
             return $a['fromTimeVal'] <=> $b['fromTimeVal'];
         });
     }
 
-    public function getDuration(): string {
+    public function getDuration(): string
+    {
         return $this->connectionData['duration'];
     }
 
-    public function getDepartureTime() : DateTime {
+    public function getDepartureTime(): DateTime
+    {
         return (new DateTime())->setTimestamp($this->getDepartureSegment()['fromTimeVal']);
     }
 
-    public function getArrivalTime() : DateTime {
+    public function getArrivalTime(): DateTime
+    {
         return (new DateTime())->setTimestamp($this->getArrivalSegment()['toTimeVal']);
     }
 
-    public function getDepartureStation() : string {
+    public function getDepartureStation(): string
+    {
         return $this->getDepartureSegment()['departure'];
     }
 
-    public function getArrivalStation() : string {
+    public function getArrivalStation(): string
+    {
         return $this->getArrivalSegment()['arrival'];
     }
 
-    private function getArrivalSegment() : array {
+    private function getArrivalSegment(): array
+    {
         $segmentCount = count($this->connectionData['segments']);
         return $this->connectionData['segments'][$segmentCount - 1];
     }
 
-    private function getDepartureSegment() : array {
+    private function getDepartureSegment(): array
+    {
         return $this->connectionData['segments'][0];
     }
 
-    public function getTransport(): string {
+    public function getTransport(): string
+    {
         return $this->connectionData['transport'];
     }
 
-    public function getPrice(): string {
+    public function getPrice(): string
+    {
         return $this->connectionData['price'];
     }
 }
