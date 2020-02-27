@@ -3,7 +3,6 @@
 namespace App\Service;
 
 use App\Model\ConnectionModelInterface;
-use App\Model\VirailConnectionModel;
 use DateTime;
 use Exception;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +12,7 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class VirailTransport
+class ConnectionSearch
 {
     private const URL = 'https://www.virail.com/virail/v7/search/en_us?from=c.3173435&to=c.3169070&lang=en_us&dt=%s&currency=USD&adult_passengers=1';
     private const DATE_FORMAT = 'Y-m-d';
@@ -23,10 +22,15 @@ class VirailTransport
      * @var HttpClientInterface
      */
     private $httpClient;
+    /**
+     * @var ConnectionFactory
+     */
+    private $connectionFactory;
 
-    public function __construct(HttpClientInterface $httpClient)
+    public function __construct(HttpClientInterface $httpClient, ConnectionFactory $connectionFactory)
     {
         $this->httpClient = $httpClient;
+        $this->connectionFactory = $connectionFactory;
     }
 
     /**
@@ -96,6 +100,6 @@ class VirailTransport
             return $a['priceVal'] <=> $b['priceVal'];
         });
 
-        return new VirailConnectionModel($connections[0]);
+        return $this->connectionFactory->createConnection($connections[0]);
     }
 }

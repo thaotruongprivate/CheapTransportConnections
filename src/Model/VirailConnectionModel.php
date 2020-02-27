@@ -8,12 +8,10 @@ class VirailConnectionModel implements ConnectionModelInterface
 {
     protected $connectionData;
 
-    public function __construct(array $route)
+    public function __construct(array $connection)
     {
-        $this->connectionData = $route;
-        usort($this->connectionData['segments'], function ($a, $b) {
-            return $a['fromTimeVal'] <=> $b['fromTimeVal'];
-        });
+        $this->connectionData = $connection;
+        $this->sortSegments();
     }
 
     public function getDuration(): string
@@ -60,5 +58,12 @@ class VirailConnectionModel implements ConnectionModelInterface
     public function getPrice(): string
     {
         return $this->connectionData['price'];
+    }
+
+    private function sortSegments(): void
+    {
+        usort($this->connectionData['segments'], function ($a, $b) {
+            return $a['fromTimeVal'] <=> $b['fromTimeVal'];
+        });
     }
 }
