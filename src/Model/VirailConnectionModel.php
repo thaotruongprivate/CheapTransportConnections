@@ -8,9 +8,9 @@ class VirailConnectionModel implements ConnectionModelInterface
 {
     protected $connectionData;
 
-    public function __construct(array $connection)
+    public function __construct(array $connectionData)
     {
-        $this->connectionData = $connection;
+        $this->connectionData = $connectionData;
         $this->sortSegments();
     }
 

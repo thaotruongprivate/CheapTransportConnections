@@ -71,7 +71,7 @@ class ConnectionSearch
             if ($result->getStatusCode() === Response::HTTP_OK) {
                 $connections = json_decode($result->getContent(), true)['result'];
                 $filteredConnections = array_filter($connections, function ($connection) use ($excludedTransport) {
-                    return !in_array($connection['transport'], $excludedTransport);
+                    return !in_array($connection['transport'], $excludedTransport) && $connection['price'] !== null;
                 });
                 return array_values($filteredConnections);
             }
