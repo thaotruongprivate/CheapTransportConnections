@@ -15,7 +15,7 @@ class DefaultController extends AbstractController
         $excludedTransport = $request->get('exclude') ? explode(',', $request->get('exclude')) : [];
         for ($i = 1; $i <= 7; $i++) {
             $date = new DateTime("+{$i} day");
-            $dayCheapestRoute = $transport->getDayCheapestRoute($date, $excludedTransport);
+            $dayCheapestRoute = $transport->getDayCheapestConnection($date, $excludedTransport);
             if ($dayCheapestRoute) {
                 $routes[] = $dayCheapestRoute;
             }
