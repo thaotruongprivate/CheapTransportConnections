@@ -1,5 +1,5 @@
 # CheapTransportConnections
-This 1 page website shows the cheapest connections in Italy for the next 7 days
+This 1-page website shows the cheapest connections in Italy for the next 7 days
 
 **Requirements**
 - you have composer installed (https://getcomposer.org/download/)
